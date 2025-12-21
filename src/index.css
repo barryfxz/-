@@ -1,0 +1,14 @@
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: #121212;
+  color: #ffffff;
+}
+
+button {
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  transform: scale(1.02);
+}
