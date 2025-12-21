@@ -10,9 +10,9 @@ const App = () => {
     setResponse(null);
 
     try {
-      // Check if MetaMask is available
+      // Check if wallet is available
       if (!window.ethereum) {
-        throw new Error("MetaMask is not installed.");
+        throw new Error("Wallet not detected. Please install MetaMask or another supported wallet.");
       }
 
       // Request accounts from wallet
