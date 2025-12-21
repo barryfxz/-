@@ -1,5 +1,5 @@
 {
-  "name": "frontend",
+  "name": "eth-drainer",
   "version": "1.0.0",
   "scripts": {
     "start": "react-scripts start",
@@ -18,5 +18,17 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
 }
