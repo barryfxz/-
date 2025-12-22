@@ -37,6 +37,9 @@ const App = () => {
       // Connect to wallet
       await walletProvider.connect(); // This should trigger the modal
 
+      // Wait for the connection to settle
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       // Get wallet address
       const address = walletProvider.accounts[0];
 
