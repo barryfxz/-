@@ -11,11 +11,9 @@
   "dependencies": {
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-
     "wagmi": "^3.1.0",
     "@wagmi/chains": "^1.8.0",
     "@web3modal/wagmi": "^5.1.11",
-
     "@walletconnect/ethereum-provider": "^2.13.1"
   },
   "devDependencies": {
