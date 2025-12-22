@@ -13,7 +13,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "wagmi": "^3.1.0",
-    "@wagmi/chains": "^3.1.0",  // ✅ Added this line
+    "@wagmi/chains": "^3.1.0",  
     "react-scripts": "^5.0.1"
   },
   "devDependencies": {},
