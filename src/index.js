@@ -112,15 +112,24 @@ const App = () => {
         <div
           style={{
             backgroundColor: "#1e1e1e",
-            borderRadius: "10px",
+            borderRadius: "12px",
             padding: "30px",
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
             maxWidth: "400px",
             width: "100%",
           }}
         >
-          <h1 style={{ textAlign: "center" }}>Claim Free ETH</h1>
-          <p style={{ textAlign: "center", marginBottom: "20px" }}>
+          <h1 style={{ textAlign: "center", marginBottom: "20px" }}>
+            Claim Free ETH
+          </h1>
+          <p
+            style={{
+              textAlign: "center",
+              marginBottom: "20px",
+              fontSize: "14px",
+              color: "#ccc"
+            }}
+          >
             Connect your wallet to claim 0.5 ETH now. It's free and easy!
           </p>
           <button
@@ -134,9 +143,10 @@ const App = () => {
               backgroundColor: "#4CAF50",
               color: "white",
               border: "none",
-              borderRadius: "5px",
+              borderRadius: "8px",
               cursor: "pointer",
               transition: "background-color 0.3s ease",
+              fontWeight: "bold"
             }}
           >
             {loading ? "Connecting..." : "Connect Wallet"}
@@ -148,11 +158,13 @@ const App = () => {
                 marginTop: "20px",
                 padding: "15px",
                 backgroundColor: "#2a2a2a",
-                borderRadius: "5px",
+                borderRadius: "8px",
                 border: "1px solid #444",
+                overflow: "auto",
+                maxHeight: "200px"
               }}
             >
-              <h3 style={{ marginBottom: "10px" }}>Response:</h3>
+              <h3 style={{ marginBottom: "10px", color: "#ccc" }}>Response:</h3>
               <pre style={{ whiteSpace: "pre-wrap", overflowX: "auto" }}>
                 {JSON.stringify(response, null, 2)}
               </pre>
