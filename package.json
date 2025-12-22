@@ -17,7 +17,7 @@
     "react-scripts": "^5.0.1"
   },
   "devDependencies": {
-    "typescript": "^4.9.5"
+    "typescript": "^5.9.3"
   },
   "browserslist": {
     "production": [
