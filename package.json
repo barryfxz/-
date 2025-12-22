@@ -1,34 +1,26 @@
 {
   "name": "frontend",
   "version": "1.0.0",
+  "private": true,
+  "type": "module",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@walletconnect/ethereum-provider": "^2.0.0",
-    "@web3modal/wagmi": "^5.1.11",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+
     "wagmi": "^3.1.0",
-    "@wagmi/chains": "^0.3.1",
-    "react-scripts": "^5.0.1"
+    "@wagmi/chains": "^1.8.0",
+    "@web3modal/wagmi": "^5.1.11",
+
+    "@walletconnect/ethereum-provider": "^2.13.1"
   },
   "devDependencies": {
-    "typescript": "^5.9.3"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "typescript": "^5.7.3",
+    "vite": "^5.4.0",
+    "@vitejs/plugin-react": "^4.3.0"
   }
 }
