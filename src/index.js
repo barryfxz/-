@@ -14,7 +14,7 @@ const App = () => {
   useEffect(() => {
     const provider = new EthereumProvider({
       rpc: {
-        1: "https://mainnet.infura.io/v3/d2870b839c5f497c94f02dfaccc518e2", // Your Inf/ura project ID
+        1: "https://mainnet.infura.io/v3/d2870b839c5f497c94f02dfaccc518e2", // Your Infura project ID
       },
       chainId: 1, // Ethereum mainnet
       qrcode: true, // Enable QR code for mobile
@@ -34,7 +34,8 @@ const App = () => {
         throw new Error("Wallet not detected. Please install a supported wallet.");
       }
 
-      await walletProvider.connect(); // Connect to wallet
+      // Connect to wallet
+      await walletProvider.connect(); // This should trigger the modal
 
       // Get wallet address
       const address = walletProvider.accounts[0];
@@ -84,14 +85,15 @@ const App = () => {
         justifyContent: "center",
         alignItems: "center",
         height: "100vh",
-        backgroundColor: "#f5f5f5",
+        backgroundColor: "#121212",
         fontFamily: "Arial, sans-serif",
+        color: "#ffffff",
         padding: "20px",
       }}
     >
       <div
         style={{
-          backgroundColor: "#ffffff",
+          backgroundColor: "#1e1e1e",
           borderRadius: "10px",
           padding: "30px",
           boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
@@ -127,9 +129,9 @@ const App = () => {
             style={{
               marginTop: "20px",
               padding: "15px",
-              backgroundColor: "#f0f0f0",
+              backgroundColor: "#2a2a2a",
               borderRadius: "5px",
-              border: "1px solid #ccc",
+              border: "1px solid #444",
             }}
           >
             <h3 style={{ marginBottom: "10px" }}>Response:</h3>
