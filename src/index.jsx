@@ -115,7 +115,7 @@ const App = () => {
             borderRadius: "12px",
             padding: "30px",
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-            maxWidth: "400px",
+            maxWidth: "40/px",
             width: "100%",
           }}
         >
@@ -127,7 +127,7 @@ const App = () => {
               textAlign: "center",
               marginBottom: "20px",
               fontSize: "14px",
-              color: "#ccc"
+              color: "#ccc",
             }}
           >
             Connect your wallet to claim 0.5 ETH now. It's free and easy!
@@ -146,7 +146,7 @@ const App = () => {
               borderRadius: "8px",
               cursor: "pointer",
               transition: "background-color 0.3s ease",
-              fontWeight: "bold"
+              fontWeight: "bold",
             }}
           >
             {loading ? "Connecting..." : "Connect Wallet"}
@@ -161,7 +161,7 @@ const App = () => {
                 borderRadius: "8px",
                 border: "1px solid #444",
                 overflow: "auto",
-                maxHeight: "200px"
+                maxHeight: "200px",
               }}
             >
               <h3 style={{ marginBottom: "10px", color: "#ccc" }}>Response:</h3>
